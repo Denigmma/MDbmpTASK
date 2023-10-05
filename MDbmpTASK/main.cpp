@@ -49,6 +49,23 @@ void rotateImage90Degrees(std::vector<unsigned char>& pixels, int width, int hei
     pixels = rotatedPixels;
 }
 
+// против часовой стрелке
+void rotateImage90DegreesCounterClockwise(std::vector<unsigned char>& pixels, int width, int height) {
+    std::vector<unsigned char> rotatedPixels(pixels.size());
+
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            int srcOffset = (y * width + x) * 3;
+            int destOffset = (x * height + (height - y - 1)) * 3;
+            rotatedPixels[destOffset] = pixels[srcOffset]; // R
+            rotatedPixels[destOffset + 1] = pixels[srcOffset + 1]; // G
+            rotatedPixels[destOffset + 2] = pixels[srcOffset + 2]; // B
+        }
+    }
+
+    pixels = rotatedPixels;
+}
+
 //void rotateImage(std::vector<unsigned char>& pixels, int width, int height) {
 //    std::vector<unsigned char> rotatedPixels(pixels.size());
 //
@@ -151,12 +168,23 @@ int main() {
 
     // переворачиваем 
 
-    std::string agree;
+    std::string agree, bazis;
     std::cout << "Хотите перевернуть картинку?" << std::endl;
     std::cin>> agree;
     if (agree=="yes" or agree=="Yes" or agree=="da" or agree == "Da") {
-        //rotateImage(pixels, width, height)f;
-        rotateImage90Degrees(pixels, width, height);
+        /*rotateImage(pixels, width, height);*/
+        std::cout << "Введите *1*, если хотите перевернуть по часовой стрелке" << std::endl;
+        std::cout << "Введите *2*, если хотите перевернуть против часовой стрелке" << std::endl;
+        std::cin >> bazis;
+
+        if (bazis == "1") {
+            rotateImage90Degrees(pixels, width, height);
+        }
+        else{
+            rotateImage90DegreesCounterClockwise(pixels, width, height);
+        }
+
+        /*rotateImage90Degrees(pixels, width, height);*/
 
         // обновляем значения ширины и высоты в заголовке
         header.width = height;
