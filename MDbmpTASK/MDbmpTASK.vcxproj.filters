@@ -18,6 +18,9 @@
     <Image Include="bmp1.bmp">
       <Filter>Файлы ресурсов</Filter>
     </Image>
+    <Image Include="bmp2.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
     <Image Include="output.bmp">
       <Filter>Файлы ресурсов</Filter>
     </Image>

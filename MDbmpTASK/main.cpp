@@ -3,8 +3,7 @@
 #include <vector>
 
 
-
-#pragma pack(1) // отключение падинга
+#pragma pack(1) // отключение выравнивания структур
 
 // заголовок BMP файла
 struct BMPHeader {
@@ -28,9 +27,7 @@ struct BMPHeader {
 
 #pragma pack(pop) // возвращение
 
-// добавление функции переворота
-
-
+// добавление функций переворота
 // на 90 по часовой стрелке
 
 void rotateImage90Degrees(std::vector<unsigned char>& pixels, int width, int height) {
@@ -65,24 +62,6 @@ void rotateImage90DegreesCounterClockwise(std::vector<unsigned char>& pixels, in
 
     pixels = rotatedPixels;
 }
-
-//void rotateImage(std::vector<unsigned char>& pixels, int width, int height) {
-//    std::vector<unsigned char> rotatedPixels(pixels.size());
-//
-//    for (int x = 0; x < width; x++) {
-//        for (int y = 0; y < height; y++) {
-//            int srcOffset = (y * width + x) * 3;
-//            int destOffset = ((height - 1 - y) * width + x) * 3;
-//            rotatedPixels[destOffset] = pixels[srcOffset];
-//            rotatedPixels[destOffset + 1] = pixels[srcOffset + 1];
-//            rotatedPixels[destOffset + 2] = pixels[srcOffset + 2];
-//        }
-//    }
-//
-//    pixels = rotatedPixels;
-//}
-
-
 
 // добавление функции гауса
 void GaussianFilter(std::vector<unsigned char>& pixels, int width, int height) {
@@ -132,7 +111,6 @@ int main() {
     std::cout << "Введите название файла" << std::endl;
     std::cin >> namefile;
 
-    
     // чтение файла
     std::ifstream inputFile(namefile, std::ios::binary);
 
@@ -140,7 +118,7 @@ int main() {
         std::cout << "---Не удалось открыть файл---" << std::endl;
         return 1;
     }
-    else{
+    else {
         std::cout << "---Файл успешно открыт---" << std::endl;
     }
 
@@ -160,9 +138,13 @@ int main() {
     int width = header.width;
     int height = header.height;
     int rowSize = (width * header.bitsPerPixel / 8 + 3) & (~3);
+    if ((height % 4 != 0) or (width % 4 != 0)) {
+        std::cout << "Eror: Файл имеет нестандартные размеры" << std::endl;
+        return 0;
+    };
 
     // чтение пикселей с учетом паддинга
-    std::vector<unsigned char> pixels(rowSize * height);
+    std::vector<unsigned char> pixels(height * rowSize);
     inputFile.read(reinterpret_cast<char*>(pixels.data()), pixels.size());
     inputFile.close();
 
@@ -170,9 +152,8 @@ int main() {
 
     std::string agree, bazis;
     std::cout << "Хотите перевернуть картинку?" << std::endl;
-    std::cin>> agree;
-    if (agree=="yes" or agree=="Yes" or agree=="da" or agree == "Da") {
-        /*rotateImage(pixels, width, height);*/
+    std::cin >> agree;
+    if (agree == "yes" or agree == "Yes" or agree == "da" or agree == "Da") {
         std::cout << "Введите *1*, если хотите перевернуть по часовой стрелке" << std::endl;
         std::cout << "Введите *2*, если хотите перевернуть против часовой стрелке" << std::endl;
         std::cin >> bazis;
@@ -180,29 +161,26 @@ int main() {
         if (bazis == "1") {
             rotateImage90Degrees(pixels, width, height);
         }
-        else{
+        else {
             rotateImage90DegreesCounterClockwise(pixels, width, height);
         }
-
-        /*rotateImage90Degrees(pixels, width, height);*/
 
         // обновляем значения ширины и высоты в заголовке
         header.width = height;
         header.height = width;
 
+
         // обновляем размер файла
         header.fileSize = sizeof(header) + pixels.size();
+
     }
     else {
         std::cout << "Ну нет - так нет" << std::endl;
         return 0;
     }
 
-    ////rotateImage(pixels, width, height);
-    ////rotateImage90Degrees(pixels, width, height);
-    //rotatedPixels(pixels, width, height);
 
-    // Записываем перевернутое изображение в "output.bmp"
+    // записываем перевернутое изображение в "output.bmp"
     std::ofstream outputFile("output.bmp", std::ios::binary);
 
     if (!outputFile.is_open()) {
@@ -210,7 +188,7 @@ int main() {
         return 1;
     }
 
-    // Записываем заголовок и пиксельные данные
+    // записываем заголовок и пиксельные данные
     outputFile.write(reinterpret_cast<char*>(&header), sizeof(header));
     outputFile.write(reinterpret_cast<char*>(pixels.data()), pixels.size());
     outputFile.close();
@@ -225,12 +203,12 @@ int main() {
         return 1;
     }
 
-    // Чтение заголовка 2
+    // чтение заголовка 2
     BMPHeader rotatedHeader;
     rotatedInputFile.read(reinterpret_cast<char*>(&rotatedHeader), sizeof(rotatedHeader));
 
     if (rotatedHeader.signature != 0x4D42) { // 'BM' сигнатура
-        std::cerr << "---Неверный формат BMP файла output.bmp---" << std::endl;
+        std::cout << "---Неверный формат BMP файла output.bmp---" << std::endl;
         rotatedInputFile.close();
         return 1;
     }
@@ -239,7 +217,7 @@ int main() {
     int rotatedHeight = rotatedHeader.height;
     int rotatedRowSize = (rotatedWidth * rotatedHeader.bitsPerPixel / 8 + 3) & (~3);
 
-    // Чтение пикселей с паддингом (RowSize)
+    // чтение пикселей с паддингом (RowSize)
     std::vector<unsigned char> rotatedPixels(rotatedRowSize * rotatedHeight);
     rotatedInputFile.read(reinterpret_cast<char*>(rotatedPixels.data()), rotatedPixels.size());
     rotatedInputFile.close();
@@ -247,7 +225,7 @@ int main() {
     // применяем фильтр Гаусса
     GaussianFilter(rotatedPixels, rotatedWidth, rotatedHeight);
 
-    // Записываем обработанное изображение в файл "outputG.bmp"
+    // зписываем обработанное изображение в файл "outputG.bmp"
     std::ofstream outputGaussianFile("outputG.bmp", std::ios::binary);
 
     if (!outputGaussianFile.is_open()) {
@@ -255,7 +233,7 @@ int main() {
         return 1;
     }
 
-    // Записываем заголовок и пиксельные данные
+    // записываем заголовок и пиксельные данные
     outputGaussianFile.write(reinterpret_cast<char*>(&rotatedHeader), sizeof(rotatedHeader));
     outputGaussianFile.write(reinterpret_cast<char*>(rotatedPixels.data()), rotatedPixels.size());
     outputGaussianFile.close();

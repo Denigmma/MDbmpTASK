@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="bmp1.bmp" />
+    <Image Include="bmp2.bmp" />
     <Image Include="output.bmp" />
     <Image Include="outputG.bmp" />
   </ItemGroup>
